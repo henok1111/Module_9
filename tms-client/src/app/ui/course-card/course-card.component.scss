@@ -1,0 +1,18 @@
+.card {
+  border: 1px solid #ddd;
+  border-radius: 8px;
+  padding: 1rem;
+}
+
+.badge {
+  display: inline-block;
+  padding: 0.25rem 0.5rem;
+  border-radius: 4px;
+  background: #e6f4ea;
+  color: #1e7b34;
+
+  &.closed {
+    background: #fdecea;
+    color: #c62828;
+  }
+}

@@ -1,0 +1,23 @@
+.pending-summary {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.75rem 1.25rem;
+  border-radius: 8px;
+  background: #eef2ff;
+  border: 1px solid #c7d2fe;
+}
+
+.label {
+  font-weight: 600;
+  color: #3730a3;
+}
+
+.count {
+  font-size: 1.25rem;
+  font-weight: 700;
+  color: #4338ca;
+  background: #fff;
+  padding: 0.15rem 0.6rem;
+  border-radius: 999px;
+}
