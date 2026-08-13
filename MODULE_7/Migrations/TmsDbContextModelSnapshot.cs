@@ -63,9 +63,6 @@ namespace TmsApi.Migrations
                     b.Property<decimal?>("Grade")
                         .HasColumnType("numeric");
 
-                    b.Property<int>("Status")
-                        .HasColumnType("integer");
-
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 

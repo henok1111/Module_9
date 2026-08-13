@@ -1,74 +1,42 @@
 using Microsoft.EntityFrameworkCore;
-using TmsApi.Data;
+using TmsApi.Data; // Ensure this is your actual DbContext namespace
 using TmsApi.Dtos;
-using TmsApi.Entities;
 
 namespace TmsApi.Services;
 
 public class EnrollmentService : IEnrollmentService
 {
-    private readonly TmsDbContext _context;
+    private readonly TmsDbContext _context; // Match your real DbContext class name here
 
     public EnrollmentService(TmsDbContext context)
     {
         _context = context;
     }
 
+    // FIX CS0738: Note the '?' after EnrollmentResponseDto to allow nulls
     public async Task<EnrollmentResponseDto?> GetByIdAsync(int courseId, int id, CancellationToken ct)
     {
         return await _context.Enrollments
             .AsNoTracking()
             .Where(e => e.CourseId == courseId && e.Id == id)
-            .Select(e => new EnrollmentResponseDto(
-                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
-            .FirstOrDefaultAsync(ct);
+            .Select(e => new EnrollmentResponseDto(e.Id, e.CourseId, e.StudentId, e.EnrolledAt)) 
+            .FirstOrDefaultAsync(ct); 
     }
 
+    // FIX CS0535: Ensure parameters match IEnrollmentService exactly
     public async Task<EnrollmentResponseDto> CreateAsync(int courseId, EnrollStudentRequest request, CancellationToken ct)
     {
+        // Replace this throw with your actual enrollment creation code
         throw new NotImplementedException();
     }
 
+    // FIX CS0738: Ensure return type is strictly Task<List<EnrollmentResponseDto>>
     public async Task<List<EnrollmentResponseDto>> GetByCourseAsync(int courseId, CancellationToken ct)
     {
         return await _context.Enrollments
             .AsNoTracking()
             .Where(e => e.CourseId == courseId)
-            .Select(e => new EnrollmentResponseDto(
-                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
+            .Select(e => new EnrollmentResponseDto(e.Id, e.CourseId, e.StudentId, e.EnrolledAt))
             .ToListAsync(ct);
-    }
-
-    public async Task<List<EnrollmentResponseDto>> GetAllAsync(CancellationToken ct)
-    {
-        return await _context.Enrollments
-            .AsNoTracking()
-            .Select(e => new EnrollmentResponseDto(
-                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
-            .ToListAsync(ct);
-    }
-
-    public async Task<EnrollmentResponseDto?> ApproveAsync(int id, CancellationToken ct)
-    {
-        var enrollment = await _context.Enrollments
-            .Include(e => e.Student)
-            .Include(e => e.Course)
-            .FirstOrDefaultAsync(e => e.Id == id, ct);
-
-        if (enrollment is null)
-        {
-            return null;
-        }
-
-        enrollment.Status = EnrollmentStatus.Approved;
-        await _context.SaveChangesAsync(ct);
-
-        return new EnrollmentResponseDto(
-            enrollment.Id, enrollment.CourseId, enrollment.Course.Title,
-            enrollment.StudentId, enrollment.Student.Name,
-            enrollment.EnrolledAt, enrollment.Status.ToString());
     }
 }

@@ -1,10 +1,9 @@
 namespace TmsApi.Dtos;
 
+// What the client sees after enrolling a student
+// Clean — no navigation properties, no internal fields
 public record EnrollmentResponseDto(
     int Id,
     int CourseId,
-    string CourseName,
     int StudentId,
-    string StudentName,
-    DateTime EnrolledAt,
-    string Status);
+    DateTime EnrolledAt);

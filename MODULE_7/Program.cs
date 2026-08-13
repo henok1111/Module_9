@@ -7,7 +7,6 @@ using TmsApi.Services;
 using TmsApi.Filters;
 using TmsApi.Persistence;
 using Microsoft.Extensions.Options;
-
 using Asp.Versioning;
 using TmsApi.Middleware;
 var builder = WebApplication.CreateBuilder(args);
@@ -42,13 +41,6 @@ builder.Services.AddApiVersioning(options =>
 {
     options.GroupNameFormat = "'v'VVV";
     options.SubstituteApiVersionInUrl = true;
-});
-builder.Services.AddCors(options =>
-{
-    options.AddPolicy("AllowAngular", policy =>
-        policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
 });
 // Merged the duplicate AddDbContext setups safely into one definition
 builder.Services.AddDbContext<TmsDbContext>(options =>
@@ -116,7 +108,7 @@ app.UseRouting();
 app.UseAuthentication();
 app.UseAuthorization();
 app.UseMiddleware<V1DeprecationMiddleware>();
-app.UseCors("AllowAngular");   //angular conectivity 
+
 // ── Session 3: Wire all controllers ───────────────────────────────
 app.MapControllers();
 
