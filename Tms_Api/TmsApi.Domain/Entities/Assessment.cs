@@ -1,12 +1,12 @@
-namespace TmsApi.Domain.Entities;
-public class Assessment
-{
-public int Id { get; set; }
-public required string Title { get; set; }
-public decimal MaxScore { get; set; }
-public decimal Weight { get; set; } 
-// share of the final grade, e.g. 0.30m for 30%
-// Foreign key + navigation to the owning course
-public int CourseId { get; set; }
-public Course Course { get; set; } = null!;
-}
+// Models/Assessment.cs
+// ─────────────────────────────────────────────────────────────
+// This is the data shape returned by the assessments endpoint
+// We use a record because assessment results are facts
+// Once a grade is recorded it should not be mutated
+// ─────────────────────────────────────────────────────────────
+
+public record AssessmentResult(
+    string CourseCode,   // e.g. "CS-101"
+    string StudentId,    // e.g. "S-001"
+    string LetterGrade   // e.g. "A"
+);

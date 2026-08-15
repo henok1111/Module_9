@@ -1,43 +1,87 @@
 using Microsoft.EntityFrameworkCore;
-using TmsApi.Data; // Ensure this is your actual DbContext namespace
 using TmsApi.Application.DTOs;
 using TmsApi.Application.Interfaces;
+using TmsApi.Domain.Entities;
 using TmsApi.Infrastructure.Persistence;
+
 namespace TmsApi.Infrastructure.Services;
 
 public class EnrollmentService : IEnrollmentService
 {
-    private readonly TmsDbContext _context; // Match your real DbContext class name here
+    private readonly TmsDbContext _context;
 
     public EnrollmentService(TmsDbContext context)
     {
         _context = context;
     }
 
-    // FIX CS0738: Note the '?' after EnrollmentResponseDto to allow nulls
-    public async Task<EnrollmentResponseDto?> GetByIdAsync(int courseId, int id, CancellationToken ct)
+    public async Task<bool> ExistsAsync(int studentId, string courseCode, CancellationToken ct = default)
+    {
+        return await _context.Enrollments
+            .AnyAsync(e => e.StudentId == studentId && e.Course.Code == courseCode, ct);
+    }
+
+    public async Task AddAsync(Enrollment enrollment, CancellationToken ct = default)
+    {
+        await _context.Enrollments.AddAsync(enrollment, ct);
+        await _context.SaveChangesAsync(ct);
+    }
+
+    public async Task<EnrollmentResponseDto> CreateAsync(int courseId, EnrollStudentRequest request, CancellationToken ct = default)
+    {
+        throw new NotImplementedException();
+    }
+
+    public async Task<EnrollmentResponseDto?> GetByIdAsync(int courseId, int id, CancellationToken ct = default)
     {
         return await _context.Enrollments
             .AsNoTracking()
             .Where(e => e.CourseId == courseId && e.Id == id)
-            .Select(e => new EnrollmentResponseDto(e.Id, e.CourseId, e.StudentId, e.EnrolledAt)) 
-            .FirstOrDefaultAsync(ct); 
+            .Select(e => new EnrollmentResponseDto(
+                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
+                e.EnrolledAt, e.Status.ToString()))
+            .FirstOrDefaultAsync(ct);
     }
 
-    // FIX CS0535: Ensure parameters match IEnrollmentService exactly
-    public async Task<EnrollmentResponseDto> CreateAsync(int courseId, EnrollStudentRequest request, CancellationToken ct)
-    {
-        // Replace this throw with your actual enrollment creation code
-        throw new NotImplementedException();
-    }
-
-    // FIX CS0738: Ensure return type is strictly Task<List<EnrollmentResponseDto>>
-    public async Task<List<EnrollmentResponseDto>> GetByCourseAsync(int courseId, CancellationToken ct)
+    public async Task<IEnumerable<EnrollmentResponseDto>> GetByCourseAsync(int courseId, CancellationToken ct = default)
     {
         return await _context.Enrollments
             .AsNoTracking()
             .Where(e => e.CourseId == courseId)
-            .Select(e => new EnrollmentResponseDto(e.Id, e.CourseId, e.StudentId, e.EnrolledAt))
+            .Select(e => new EnrollmentResponseDto(
+                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
+                e.EnrolledAt, e.Status.ToString()))
             .ToListAsync(ct);
+    }
+
+    public async Task<IEnumerable<EnrollmentResponseDto>> GetAllAsync(CancellationToken ct = default)
+    {
+        return await _context.Enrollments
+            .AsNoTracking()
+            .Select(e => new EnrollmentResponseDto(
+                e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
+                e.EnrolledAt, e.Status.ToString()))
+            .ToListAsync(ct);
+    }
+
+    public async Task<EnrollmentResponseDto?> ApproveAsync(int id, CancellationToken ct = default)
+    {
+        var enrollment = await _context.Enrollments
+            .Include(e => e.Student)
+            .Include(e => e.Course)
+            .FirstOrDefaultAsync(e => e.Id == id, ct);
+
+        if (enrollment is null)
+        {
+            return null;
+        }
+
+        enrollment.Status = EnrollmentStatus.Approved;
+        await _context.SaveChangesAsync(ct);
+
+        return new EnrollmentResponseDto(
+            enrollment.Id, enrollment.CourseId, enrollment.Course.Title,
+            enrollment.StudentId, enrollment.Student.Name,
+            enrollment.EnrolledAt, enrollment.Status.ToString());
     }
 }

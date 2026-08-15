@@ -1,48 +1,42 @@
 using Asp.Versioning;
-using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using TmsApi.Application.Enrollments.Commands;
-using TmsApi.Application.Enrollments.Queries;
+using TmsApi.Application.Interfaces;
+using TmsApi.Application.DTOs;
 
 namespace TmsApi.Api.Controllers;
 
 [ApiController]
-[Route("api/v{version:apiVersion}/enrollments")]
+[Route("api/v{version:apiVersion}/courses/{courseId:int}/enrollments")]
 [ApiVersion("2.0")]
-public class EnrollmentsController(IMediator mediator) : ControllerBase
+public class EnrollmentsController(IEnrollmentService enrollmentService) : ControllerBase
 {
     [HttpPost]
-    public async Task<IActionResult> Enroll([FromBody] EnrollStudentCommand command, CancellationToken ct)
+    public async Task<IActionResult> Enroll(int courseId, [FromBody] EnrollStudentRequest request, CancellationToken ct)
     {
-        var result = await mediator.Send(command, ct);
+        var result = await enrollmentService.CreateAsync(courseId, request, ct);
 
-        return result.Match<IActionResult>(
-            onSuccess: created => CreatedAtAction(
-                nameof(GetSchedule),
-                new { studentId = created.StudentId },
-                created),
-            onFailure: error =>
-            {
-                // Fixed: Nested the default discard case cleanly inside the switch expression
-                var status = error.Code switch
-                {
-                    "course_not_found" => StatusCodes.Status404NotFound,
-                    "course_full" or "already_enrolled" => StatusCodes.Status409Conflict,
-                    _ => StatusCodes.Status400BadRequest
-                }; // <-- Fixed: Properly terminated the switch assignment expression
-
-                return Problem(
-                    statusCode: status,
-                    title: "Enrollment rejected",
-                    detail: error.Message,
-                    type: $"https://tms.local/errors/{error.Code}");
-            });
+        return CreatedAtAction(
+            nameof(GetById),
+            new { courseId = courseId, id = result.Id }, // Assuming EnrollmentResponseDto has an Id property
+            result);
     }
 
-    [HttpGet("{studentId}/schedule")]
-    public async Task<IActionResult> GetSchedule(int studentId, CancellationToken ct)
+    [HttpGet("{id:int}")]
+    public async Task<IActionResult> GetById(int courseId, int id, CancellationToken ct)
     {
-        var schedule = await mediator.Send(new GetStudentScheduleQuery(studentId), ct);
-        return Ok(schedule);
+        var enrollment = await enrollmentService.GetByIdAsync(courseId, id, ct);
+        if (enrollment is null)
+        {
+            return NotFound();
+        }
+
+        return Ok(enrollment);
+    }
+
+    [HttpGet]
+    public async Task<IActionResult> GetByCourse(int courseId, CancellationToken ct)
+    {
+        var enrollments = await enrollmentService.GetByCourseAsync(courseId, ct);
+        return Ok(enrollments);
     }
 }

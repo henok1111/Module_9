@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Data;
-using TmsApi.Entities;
-
+using TmsApi.Domain.Entities; // Check if your Entities namespace is TmsApi.Domain.Entities
+using TmsApi.Infrastructure.Persistence;
 namespace TmsApi.Persistence;
 
 public static class DataSeeder

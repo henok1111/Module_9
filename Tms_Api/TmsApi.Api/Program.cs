@@ -7,16 +7,19 @@ using FluentValidation;
 using TmsApi.Domain.Entities;
 using TmsApi.Application.Filters;
 using TmsApi.Application.Interfaces;
-using TmsApi.Application.Enrollments.Commands;
 using TmsApi.Infrastructure.Persistence;
 using TmsApi.Infrastructure.Services;
 using System.Threading.RateLimiting;
 using TmsApi.Api.RateLimiting;
 using TmsApi.Middleware;
-using TmsApi.Application.Behaviors;
-using TmsApi.Api.ExceptionHandlers;
+
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.AspNetCore.RateLimiting;
+using TmsApi.Application.Behaviors;
+using TmsApi.Application.Enrollments.Commands;
+using TmsApi.Api.ExceptionHandlers;
+
+
 
 using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
@@ -40,8 +43,28 @@ builder.Services.AddHybridCache(options =>
         LocalCacheExpiration = TimeSpan.FromMinutes(2)
     };
 });
+builder.Services.AddCors(options =>
+{
+    options.AddPolicy("AllowAngular", policy =>
+        policy.WithOrigins("http://localhost:4200")
+              .AllowAnyHeader()
+              .AllowAnyMethod());
+});
+builder.Services.AddValidatorsFromAssembly(typeof(EnrollStudentValidator).Assembly);
+
+
+builder.Services.AddMediatR(cfg =>
+    cfg.RegisterServicesFromAssembly(typeof(EnrollStudentHandler).Assembly));
 
 builder.Services.AddValidatorsFromAssembly(typeof(EnrollStudentValidator).Assembly);
+
+// LoggingBehavior FIRST — wraps ValidationBehavior
+
+
+
+
+builder.Services.AddProblemDetails();
+
 
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(LoggingBehavior<,>));
 builder.Services.AddTransient(typeof(IPipelineBehavior<,>), typeof(ValidationBehavior<,>));
@@ -117,7 +140,7 @@ builder.Services.AddRateLimiter(options =>
 builder.Services.AddScoped<IEnrollmentService, EnrollmentService>();
 builder.Services.AddScoped<ICourseService, CourseService>();
 builder.Services.AddSingleton<EnrollmentWorker>();
-builder.Services.AddScoped<ICachedCourseService, CachedCourseService>();
+//builder.Services.AddScoped<ICachedCourseService, CachedCourseService>();
 builder.Services.AddDbContext<TmsDbContext>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("TmsDatabase"))
            .LogTo(Console.WriteLine, LogLevel.Information)
@@ -128,6 +151,8 @@ builder.Services.AddOptions<PaymentOptions>()
     .BindConfiguration("Payments")
     .ValidateDataAnnotations()
     .ValidateOnStart();
+
+
 
 // ── API Versioning & OpenAPI / Scalar Documentation ────────────────
 builder.Services.AddApiVersioning(options =>
@@ -148,7 +173,7 @@ builder.Services.AddOpenApi("v2", options => { options.ShouldInclude = d => d.Gr
 builder.Services.AddOpenApi(); // Default doc
 
 // ── Error Handling & Controllers ──────────────────────────────────
-builder.Services.AddExceptionHandler<GlobalExceptionHandler>();
+
 builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers(options =>
@@ -188,6 +213,7 @@ app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseRouting();
+app.UseCors("AllowAngular");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

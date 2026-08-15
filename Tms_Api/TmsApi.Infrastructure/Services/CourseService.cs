@@ -1,9 +1,11 @@
 using Microsoft.EntityFrameworkCore;
 using TmsApi.Application.DTOs;
 using TmsApi.Application.Interfaces;
+using TmsApi.Domain.Entities;
 using TmsApi.Infrastructure.Persistence;
- using TmsApi.Domain.Entities;
+
 namespace TmsApi.Infrastructure.Services;
+
 public class CourseService : ICourseService
 {
     private readonly TmsDbContext _context;
@@ -12,7 +14,6 @@ public class CourseService : ICourseService
     {
         _context = context;
     }
-
 
     public async Task<PagedResponse<CourseResponseDto>> GetCoursesAsync(
         PagedRequest request,
@@ -42,13 +43,14 @@ public class CourseService : ICourseService
             TotalCount = totalCount
         };
     }
-public async Task<bool> CodeExistsAsync(
-    string code,
-    CancellationToken ct = default)
-{
-    return await _context.Courses
-        .AnyAsync(c => c.Code == code, ct);
-}
+
+    public async Task<bool> CodeExistsAsync(
+        string code,
+        CancellationToken ct = default)
+    {
+        return await _context.Courses
+            .AnyAsync(c => c.Code == code, ct);
+    }
 
     public async Task<CourseResponseDto?> GetCourseByIdAsync(
         int id,
@@ -66,23 +68,54 @@ public async Task<bool> CodeExistsAsync(
             .FirstOrDefaultAsync(ct);
     }
 
-
-    public async Task<CourseResponseDto?> GetByIdAsync(
+    // Required by ICourseService (returns entity Course instead of DTO)
+    public async Task<Course?> GetByIdAsync(
         int id,
         CancellationToken ct = default)
     {
         return await _context.Courses
-            .Where(c => c.Id == id)
-            .Select(c => new CourseResponseDto
-            {
-                Id = c.Id,
-                Code = c.Code,
-                Title = c.Title,
-                MaxCapacity = c.MaxCapacity
-            })
-            .FirstOrDefaultAsync(ct);
+            .FirstOrDefaultAsync(c => c.Id == id, ct);
     }
 
+    // Required by ICourseService
+    public async Task<Course?> GetByCodeAsync(
+        string code,
+        CancellationToken ct = default)
+    {
+        return await _context.Courses
+            .FirstOrDefaultAsync(c => c.Code == code, ct);
+    }
+
+    // Required by ICourseService
+    public async Task AddAsync(
+        Course course,
+        CancellationToken ct = default)
+    {
+        await _context.Courses.AddAsync(course, ct);
+        await _context.SaveChangesAsync(ct);
+    }
+
+    // Required by ICourseService
+    public async Task UpdateAsync(
+        Course course,
+        CancellationToken ct = default)
+    {
+        _context.Courses.Update(course);
+        await _context.SaveChangesAsync(ct);
+    }
+
+    // Required by ICourseService
+    public async Task DeleteAsync(
+        int id,
+        CancellationToken ct = default)
+    {
+        var course = await _context.Courses.FindAsync(new object[] { id }, ct);
+        if (course != null)
+        {
+            _context.Courses.Remove(course);
+            await _context.SaveChangesAsync(ct);
+        }
+    }
 
     public async Task<CourseResponseDto> CreateAsync(
         CreateCourseRequest request,
@@ -96,7 +129,6 @@ public async Task<bool> CodeExistsAsync(
         };
 
         _context.Courses.Add(course);
-
         await _context.SaveChangesAsync(ct);
 
         return new CourseResponseDto

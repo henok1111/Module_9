@@ -6,7 +6,7 @@ import { Course, CourseDetail, PagedResponse } from "../models/course.model";
 @Injectable({ providedIn: "root" })
 export class CourseService {
   private http = inject(HttpClient);
-  private baseUrl = "http://localhost:5188/api/courses";
+  private baseUrl = "http://localhost:5188/api/v1/courses";
 
   getAll(page = 1, pageSize = 50) {
     return this.http
