@@ -29,7 +29,35 @@ public class EnrollmentService : IEnrollmentService
 
     public async Task<EnrollmentResponseDto> CreateAsync(int courseId, EnrollStudentRequest request, CancellationToken ct = default)
     {
-        throw new NotImplementedException();
+        var course = await _context.Courses.FindAsync([courseId], ct)
+            ?? throw new InvalidOperationException($"Course {courseId} was not found.");
+
+        var student = await _context.Students.FindAsync([request.StudentId], ct)
+            ?? throw new InvalidOperationException($"Student {request.StudentId} was not found.");
+
+        var alreadyEnrolled = await _context.Enrollments
+            .AnyAsync(e => e.CourseId == courseId && e.StudentId == request.StudentId, ct);
+
+        if (alreadyEnrolled)
+        {
+            throw new InvalidOperationException("This student is already enrolled in this course.");
+        }
+
+        var enrollment = new Enrollment
+        {
+            CourseId = courseId,
+            StudentId = request.StudentId,
+            EnrolledAt = DateTime.UtcNow,
+            Status = EnrollmentStatus.Pending,
+        };
+
+        await _context.Enrollments.AddAsync(enrollment, ct);
+        await _context.SaveChangesAsync(ct);
+
+        return new EnrollmentResponseDto(
+            enrollment.Id, enrollment.CourseId, course.Title,
+            enrollment.StudentId, student.Name,
+            enrollment.EnrolledAt, enrollment.Status.ToString());
     }
 
     public async Task<EnrollmentResponseDto?> GetByIdAsync(int courseId, int id, CancellationToken ct = default)

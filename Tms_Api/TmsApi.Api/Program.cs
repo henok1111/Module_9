@@ -12,7 +12,7 @@ using TmsApi.Infrastructure.Services;
 using System.Threading.RateLimiting;
 using TmsApi.Api.RateLimiting;
 using TmsApi.Middleware;
-
+using TmsApi.Api.Hubs;
 using Microsoft.Extensions.Caching.Hybrid;
 using Microsoft.AspNetCore.RateLimiting;
 using TmsApi.Application.Behaviors;
@@ -43,6 +43,7 @@ builder.Services.AddHybridCache(options =>
         LocalCacheExpiration = TimeSpan.FromMinutes(2)
     };
 });
+builder.Services.AddSignalR();
 builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
@@ -214,6 +215,7 @@ app.UseStatusCodePages();
 app.UseHttpsRedirection();
 app.UseRouting();
 app.UseCors("AllowAngular");
+app.MapHub<TmsHub>("/hubs/tms");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();

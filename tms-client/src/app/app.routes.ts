@@ -36,5 +36,11 @@ export const routes: Routes = [
         (m) => m.EnrollmentListComponent,
       ),
   },
+  {
+  path: 'grade-submission',
+  loadComponent: () =>
+    import('./features/grade-submission/grade-submission.component')
+      .then(m => m.GradeSubmissionComponent)
+},
   { path: "", redirectTo: "dashboard", pathMatch: "full" },
 ];
