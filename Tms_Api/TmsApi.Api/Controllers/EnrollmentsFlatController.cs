@@ -1,6 +1,7 @@
 using Asp.Versioning;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.SignalR;
+using Microsoft.Extensions.Logging;
 using TmsApi.Api.Hubs;
 using TmsApi.Application.Hubs;
 using TmsApi.Application.Interfaces;
@@ -12,7 +13,8 @@ namespace TmsApi.Api.Controllers;
 [ApiVersion("2.0")]
 public class EnrollmentsFlatController(
     IEnrollmentService enrollmentService,
-    IHubContext<TmsHub, ITmsHubClient> hubContext) : ControllerBase
+    IHubContext<TmsHub, ITmsHubClient> hubContext,
+    ILogger<EnrollmentsFlatController> logger) : ControllerBase
 {
     [HttpGet]
     public async Task<IActionResult> GetAll(CancellationToken ct)
@@ -30,7 +32,9 @@ public class EnrollmentsFlatController(
             return NotFound();
         }
 
-        // Broadcast the status change to every connected Angular client
+        logger.LogInformation("Broadcasting enrollment approval for ID: {Id}", id);
+
+        // Broadcast status update live to all connected clients
         await hubContext.Clients.All
             .ReceiveEnrollmentStatusUpdated(id.ToString(), "Approved");
 

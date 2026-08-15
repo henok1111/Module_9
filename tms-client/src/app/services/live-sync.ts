@@ -21,10 +21,13 @@ export class LiveSyncService {
     if (this.connection) return;
     if (!isPlatformBrowser(this.platformId)) return;
 
-    this.connection = new HubConnectionBuilder()
-      .withUrl('/hubs/tms')
-      .withAutomaticReconnect([0, 2000, 10000, 30000])
-      .build();
+  
+
+this.connection = new HubConnectionBuilder()
+  .withUrl('http://localhost:5188/hubs/tms') // Replace 5000 with your API's port
+  .withAutomaticReconnect([0, 2000, 10000, 30000])
+  .build();
+
 
     this.connection.on(
       'ReceiveEnrollmentStatusUpdated',

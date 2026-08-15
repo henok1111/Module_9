@@ -5,14 +5,18 @@ import { MatSortModule, MatSort } from '@angular/material/sort';
 import { RouterLink } from '@angular/router';
 import { EnrollmentStore } from '../../store/enrollment.store';
 import { Enrollment } from '../../models/enrollment.model';
-
+import { CommonModule } from '@angular/common';
 @Component({
   selector: 'tms-enrollment-list',
   standalone: true,
-  imports: [MatTableModule, MatPaginatorModule, MatSortModule, RouterLink],
+  imports: [MatTableModule, MatPaginatorModule, MatSortModule, RouterLink, CommonModule,],
   templateUrl: './enrollment-list.component.html',
   styleUrl: './enrollment-list.component.scss',
 })
+
+
+
+
 export class EnrollmentListComponent {
   store = inject(EnrollmentStore);
 

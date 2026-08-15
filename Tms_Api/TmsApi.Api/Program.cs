@@ -48,8 +48,9 @@ builder.Services.AddCors(options =>
 {
     options.AddPolicy("AllowAngular", policy =>
         policy.WithOrigins("http://localhost:4200")
-              .AllowAnyHeader()
-              .AllowAnyMethod());
+            .AllowAnyHeader()
+            .AllowAnyMethod()
+            .AllowCredentials()); // REQUIRED for SignalR!
 });
 builder.Services.AddValidatorsFromAssembly(typeof(EnrollStudentValidator).Assembly);
 
@@ -213,12 +214,15 @@ app.UseExceptionHandler();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
-app.UseRouting();
 app.UseCors("AllowAngular");
-app.MapHub<TmsHub>("/hubs/tms");
+app.UseRouting();
+
+
+
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
+app.MapHub<TmsHub>("/hubs/tms");
 app.MapHealthChecks("/health/live").DisableRateLimiting();
 app.MapHealthChecks("/health/ready").DisableRateLimiting();
 app.UseMiddleware<V1DeprecationMiddleware>();
