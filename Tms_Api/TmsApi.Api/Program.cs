@@ -19,7 +19,7 @@ using TmsApi.Application.Behaviors;
 using TmsApi.Application.Enrollments.Commands;
 using TmsApi.Api.ExceptionHandlers;
 
-
+using TmsApi.Infrastructure.Services;
 
 using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
@@ -236,6 +236,29 @@ app.MapGet("/api/assessments/results", () => Results.Ok(new
     studentId = "S-001",
     letterGrade = "A"
 })).RequireAuthorization();
+
+
+app.MapGet("/test-hash", () =>
+{
+    var service = new TmsApi.Infrastructure.Services.CryptoDemoService();
+
+    string hash1 = service.HashUserPassword("Password123!");
+    string hash2 = service.HashUserPassword("Password123!");
+
+    bool match1 = service.VerifyUserPassword("Password123!", hash1);
+    bool match2 = service.VerifyUserPassword("Password123!", hash2);
+
+    return Results.Ok(new
+    {
+        hash1,
+        hash2,
+        hashesAreDifferent = hash1 != hash2,
+        match1,
+        match2
+    });
+});
+
+
 
 app.MapGet("/api/enrollments/worker-smoke", (EnrollmentWorker worker) =>
 {

@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using TmsApi.Domain.Entities.Enum;
 
 namespace TmsApi.Domain.Entities;
 
@@ -10,7 +11,9 @@ public class Enrollment
     public int CourseId { get; set; }
     public decimal? Grade { get; set; }
     public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
-    public EnrollmentStatus Status { get; set; } = EnrollmentStatus.Pending;
+
+    // Status is a standard string initialized to the constant value
+    public string Status { get; set; } = EnrollmentStatus.Pending;
 
     // --- NEW COLUMNS TO MATCH FORM ---
     public string Term { get; set; } = string.Empty;

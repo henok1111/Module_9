@@ -1,8 +1,8 @@
-namespace TmsApi.Domain.Entities;
+namespace TmsApi.Domain.Entities.Enum;
 
-public enum EnrollmentStatus
+public static class EnrollmentStatus
 {
-    Pending,
-    Approved,
-    Rejected
+    public const string Pending = "Pending";
+    public const string Approved = "Approved";
+    public const string Rejected = "Rejected";
 }

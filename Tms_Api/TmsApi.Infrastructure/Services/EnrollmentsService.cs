@@ -51,7 +51,7 @@ public class EnrollmentService : IEnrollmentService
             Notes = request.Notes,
             BackupCourses = request.BackupCourses ?? new List<string>(),
             EnrolledAt = DateTime.UtcNow,
-            Status = EnrollmentStatus.Pending,
+            Status = "Pending",
         };
 
         await _context.Enrollments.AddAsync(enrollment, ct);
@@ -111,7 +111,7 @@ public class EnrollmentService : IEnrollmentService
             return null;
         }
 
-        enrollment.Status = EnrollmentStatus.Approved;
+        enrollment.Status = "Approved";
         await _context.SaveChangesAsync(ct);
 
         return new EnrollmentResponseDto(

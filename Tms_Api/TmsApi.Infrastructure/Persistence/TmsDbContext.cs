@@ -17,13 +17,36 @@ public class TmsDbContext : DbContext
 
         modelBuilder.Entity<Enrollment>(entity =>
         {
-            // Default value for existing rows in 'Term'
-            entity.Property(e => e.Term)
-                .HasDefaultValue("Fall 2026");
+            // Configure Enrollment primary key and table
+            entity.HasKey(e => e.Id);
 
-            // Native Postgres array default value without JSON conversion
+            // Status is a standard string
+            entity.Property(e => e.Status)
+                  .HasMaxLength(50)
+                  .IsRequired();
+
+            // Term with default value
+            entity.Property(e => e.Term)
+                  .HasMaxLength(50)
+                  .HasDefaultValue("Fall 2026");
+
+            // Optional Notes
+            entity.Property(e => e.Notes)
+                  .HasMaxLength(500);
+
+            // Native Postgres array mapping for List<string>
+            // Note: EF Core Npgsql provider handles List<string> to text[] automatically
             entity.Property(e => e.BackupCourses)
-                .HasDefaultValueSql("'{}'::text[]");
+                  .HasDefaultValueSql("'{}'::text[]");
+
+            // Configure Relationships
+            entity.HasOne(e => e.Student)
+                  .WithMany()
+                  .HasForeignKey(e => e.StudentId);
+
+            entity.HasOne(e => e.Course)
+                  .WithMany()
+                  .HasForeignKey(e => e.CourseId);
         });
     }
 }

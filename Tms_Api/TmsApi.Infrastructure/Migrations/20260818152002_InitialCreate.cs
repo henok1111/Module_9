@@ -2,10 +2,10 @@
 
 #nullable disable
 
-namespace TmsApi.Migrations
+namespace TmsApi.Infrastructure.Migrations
 {
     /// <inheritdoc />
-    public partial class AddStatusToEnrollments : Migration
+    public partial class InitialCreate : Migration
     {
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
