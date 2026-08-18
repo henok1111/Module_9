@@ -47,6 +47,9 @@ public class EnrollmentService : IEnrollmentService
         {
             CourseId = courseId,
             StudentId = request.StudentId,
+            Term = request.Term,
+            Notes = request.Notes,
+            BackupCourses = request.BackupCourses ?? new List<string>(),
             EnrolledAt = DateTime.UtcNow,
             Status = EnrollmentStatus.Pending,
         };
@@ -57,7 +60,8 @@ public class EnrollmentService : IEnrollmentService
         return new EnrollmentResponseDto(
             enrollment.Id, enrollment.CourseId, course.Title,
             enrollment.StudentId, student.Name,
-            enrollment.EnrolledAt, enrollment.Status.ToString());
+            enrollment.EnrolledAt, enrollment.Status.ToString(),
+            enrollment.Term, enrollment.Notes, enrollment.BackupCourses);
     }
 
     public async Task<EnrollmentResponseDto?> GetByIdAsync(int courseId, int id, CancellationToken ct = default)
@@ -67,7 +71,8 @@ public class EnrollmentService : IEnrollmentService
             .Where(e => e.CourseId == courseId && e.Id == id)
             .Select(e => new EnrollmentResponseDto(
                 e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
+                e.EnrolledAt, e.Status.ToString(),
+                e.Term, e.Notes, e.BackupCourses))
             .FirstOrDefaultAsync(ct);
     }
 
@@ -78,7 +83,8 @@ public class EnrollmentService : IEnrollmentService
             .Where(e => e.CourseId == courseId)
             .Select(e => new EnrollmentResponseDto(
                 e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
+                e.EnrolledAt, e.Status.ToString(),
+                e.Term, e.Notes, e.BackupCourses))
             .ToListAsync(ct);
     }
 
@@ -88,7 +94,8 @@ public class EnrollmentService : IEnrollmentService
             .AsNoTracking()
             .Select(e => new EnrollmentResponseDto(
                 e.Id, e.CourseId, e.Course.Title, e.StudentId, e.Student.Name,
-                e.EnrolledAt, e.Status.ToString()))
+                e.EnrolledAt, e.Status.ToString(),
+                e.Term, e.Notes, e.BackupCourses))
             .ToListAsync(ct);
     }
 
@@ -110,6 +117,7 @@ public class EnrollmentService : IEnrollmentService
         return new EnrollmentResponseDto(
             enrollment.Id, enrollment.CourseId, enrollment.Course.Title,
             enrollment.StudentId, enrollment.Student.Name,
-            enrollment.EnrolledAt, enrollment.Status.ToString());
+            enrollment.EnrolledAt, enrollment.Status.ToString(),
+            enrollment.Term, enrollment.Notes, enrollment.BackupCourses);
     }
 }

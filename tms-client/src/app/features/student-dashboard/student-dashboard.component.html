@@ -1,36 +1,78 @@
-<div class="dashboard">
-  <h1>Welcome, {{ studentName() }}</h1>
-  <p>Credits Earned: {{ earnedCredits() }}</p>
-  <p>Graduation Status: {{ graduationStatus() }}</p>
-  <button (click)="registerForClass()">
-    Register for a Class (+3 credits)
-  </button>
-  <p>
-    <a routerLink="/enroll">Enroll in a course</a>
-    &nbsp;|&nbsp;
-    <a routerLink="/enrollments">View Enrollment Requests</a>
-  </p>
-  <tms-pending-summary />
-</div>
+<div class="w-full space-y-8 font-sans text-slate-100 bg-slate-950 min-h-screen">
 
-<h2>Course Catalog</h2>
-@if (coursesResource.isLoading()) {
-  <div class="spinner">Fetching courses from the server...</div>
-} @else if (coursesResource.error()) {
-  <div class="error">
-    Could not load courses. Make sure your .NET API is running.
+  <!-- Dashboard Section -->
+  <div class="bg-gradient-to-r from-slate-900 via-indigo-950 to-slate-900 rounded-3xl p-8 text-white shadow-2xl border border-indigo-500/20 flex flex-col md:flex-row justify-between items-start md:items-center gap-6 relative overflow-hidden backdrop-blur-xl">
+    <div class="absolute inset-0 bg-blue-500/5 pointer-events-none"></div>
+    <div class="space-y-2 relative z-10">
+      <h1 class="text-3xl font-extrabold tracking-tight text-white">Welcome, {{ studentName() }}</h1>
+      <div class="flex flex-wrap items-center gap-4 text-slate-300 text-sm font-medium">
+        <span class="bg-slate-900/80 px-3.5 py-1.5 rounded-full backdrop-blur-md border border-indigo-500/30 shadow-inner">
+          Credits Earned: <strong class="text-indigo-400 font-semibold">{{ earnedCredits() }}</strong>
+        </span>
+        <span class="bg-slate-900/80 px-3.5 py-1.5 rounded-full backdrop-blur-md border border-indigo-500/30 shadow-inner">
+          Graduation Status: <strong class="text-indigo-400 font-semibold">{{ graduationStatus() }}</strong>
+        </span>
+      </div>
+    </div>
+
+    <div class="flex flex-col sm:flex-row items-start sm:items-center gap-4 w-full md:w-auto relative z-10">
+      <button (click)="registerForClass()" class="w-full sm:w-auto bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white font-semibold px-6 py-3 rounded-xl shadow-lg shadow-indigo-600/20 border border-indigo-400/30 transition-all duration-200 transform hover:-translate-y-0.5 active:translate-y-0 flex items-center justify-center gap-2">
+        <span>Register for a Class</span>
+        <span class="bg-white/20 text-white text-xs px-2 py-0.5 rounded-full font-bold backdrop-blur-sm">+3</span>
+      </button>
+    </div>
   </div>
-} @else {
-  <div class="grid">
-    @for (course of coursesResource.value()!; track course.id) {
-      <tms-course-card [course]="course" (enrollClicked)="handleEnroll($event)" />
-    } @empty {
-      <p>No courses are available this term.</p>
+
+  <!-- Navigation Links & Pending Summary -->
+  <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center bg-slate-900/90 p-5 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl gap-4">
+    <div class="flex items-center gap-3 text-sm font-medium text-slate-300">
+      <a routerLink="/enroll" class="text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-1 font-semibold transition-colors">
+        Enroll in a course
+      </a>
+      <span class="text-slate-600">•</span>
+      <a routerLink="/enrollments" class="text-indigo-400 hover:text-indigo-300 hover:underline flex items-center gap-1 font-semibold transition-colors">
+        View Enrollment Requests
+      </a>
+    </div>
+    <div class="w-full sm:w-auto">
+      <tms-pending-summary />
+    </div>
+  </div>
+
+  <!-- Course Catalog Section -->
+  <div class="space-y-6 pt-4">
+    <h2 class="text-2xl font-bold text-white tracking-tight">Course Catalog</h2>
+
+    @if (coursesResource.isLoading()) {
+      <div class="flex flex-col items-center justify-center p-12 bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl space-y-3">
+        <div class="w-8 h-8 border-4 border-indigo-500 border-t-transparent rounded-full animate-spin"></div>
+        <p class="text-slate-400 font-medium text-sm">Fetching courses from the server...</p>
+      </div>
+    } @else if (coursesResource.error()) {
+      <div class="p-6 bg-rose-950/40 border border-rose-800/60 rounded-2xl text-rose-300 text-sm font-medium flex items-center gap-3 shadow-xl backdrop-blur-xl">
+        <svg xmlns="http://www.w3.org/2000/svg" class="h-5 w-5 text-rose-400 flex-shrink-0" viewBox="0 0 20 20" fill="currentColor">
+          <path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd" />
+        </svg>
+        <span>Could not load courses. Make sure your .NET API is running.</span>
+      </div>
+    } @else {
+      <div class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        @for (course of coursesResource.value()!; track course.id) {
+          <tms-course-card [course]="course" (enrollClicked)="handleEnroll($event)" />
+        } @empty {
+          <div class="col-span-full py-12 text-center bg-slate-900/90 rounded-2xl border border-slate-800 shadow-xl backdrop-blur-xl">
+            <p class="text-slate-400 font-medium">No courses are available this term.</p>
+          </div>
+        }
+      </div>
+    }
+
+    @if (selectedCourse(); as picked) {
+      <div class="p-4 bg-gradient-to-r from-slate-900 via-blue-950/80 to-slate-900 border border-blue-500/30 rounded-xl text-blue-200 text-sm flex items-center gap-3 shadow-xl backdrop-blur-xl animate-fade-in" role="status">
+        <span class="flex h-2 w-2 rounded-full bg-blue-400 shadow-[0_0_8px_rgba(96,165,250,0.8)]"></span>
+        <span>Last enrollment request: <strong class="font-semibold text-white">{{ picked.title }}</strong> (<span class="text-blue-300 font-mono text-xs bg-blue-950/80 border border-blue-500/20 px-1.5 py-0.5 rounded">{{ picked.code }}</span>)</span>
+      </div>
     }
   </div>
-}
-@if (selectedCourse(); as picked) {
-  <p class="selection-hint" role="status">
-    Last enrollment request: <strong>{{ picked.title }}</strong> ({{ picked.code }})
-  </p>
-}
+
+</div>

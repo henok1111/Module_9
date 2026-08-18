@@ -175,7 +175,7 @@ builder.Services.AddOpenApi("v2", options => { options.ShouldInclude = d => d.Gr
 builder.Services.AddOpenApi(); // Default doc
 
 // ── Error Handling & Controllers ──────────────────────────────────
-
+builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddProblemDetails();
 
 builder.Services.AddControllers(options =>

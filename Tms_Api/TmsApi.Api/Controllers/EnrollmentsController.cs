@@ -39,4 +39,16 @@ public class EnrollmentsController(IEnrollmentService enrollmentService) : Contr
         var enrollments = await enrollmentService.GetByCourseAsync(courseId, ct);
         return Ok(enrollments);
     }
+
+    [HttpPost("{id:int}/approve")]
+public async Task<IActionResult> Approve(int id, CancellationToken ct)
+{
+    var result = await enrollmentService.ApproveAsync(id, ct);
+    if (result is null)
+    {
+        return NotFound();
+    }
+
+    return Ok(result);
+}
 }
