@@ -48,9 +48,9 @@ public class CoursesController(
         // 2. Generate URI paths safely via LinkGenerator
         var selfUrl = linkGenerator.GetPathByName(HttpContext, nameof(GetCourseById), new { id }) ?? "";
         var enrollmentsUrl = linkGenerator.GetPathByAction(
-            HttpContext, 
-            action: "GetEnrollments", 
-            controller: "Enrollments", 
+            HttpContext,
+            action: "GetEnrollments",
+            controller: "Enrollments",
             values: new { courseId = id }
         ) ?? "";
 
@@ -85,9 +85,11 @@ public class CoursesController(
 
     [HttpPost]
     [EndpointSummary("Create a new course")]
-    [EndpointDescription("Creates a course with a unique code. Validates incoming payload. Returns 409 if the course code already exists.")]
+    [EndpointDescription(
+        "Creates a course with a unique code. Validates incoming payload. Returns 409 if the course code already exists.")]
     [ProducesResponseType(typeof(CourseResponseDto), StatusCodes.Status201Created)]
-    [ProducesResponseType(typeof(ValidationProblemDetails), StatusCodes.Status400BadRequest)] // Explicit schema mapping for validation errors in Scalar
+    [ProducesResponseType(typeof(ValidationProblemDetails),
+        StatusCodes.Status400BadRequest)] // Explicit schema mapping for validation errors in Scalar
     [ProducesResponseType(typeof(ProblemDetails), StatusCodes.Status409Conflict)]
     public async Task<IActionResult> CreateCourse(
         [FromBody] CreateCourseRequest request,

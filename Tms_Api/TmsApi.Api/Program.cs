@@ -20,7 +20,7 @@ using TmsApi.Application.Enrollments.Commands;
 using TmsApi.Api.ExceptionHandlers;
 
 using TmsApi.Infrastructure.Services;
-
+using Microsoft.AspNetCore.Antiforgery;
 using Microsoft.AspNetCore.Mvc;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddHealthChecks();
@@ -167,6 +167,12 @@ builder.Services.AddOpenApi("v1", options => { options.ShouldInclude = d => d.Gr
 builder.Services.AddOpenApi("v2", options => { options.ShouldInclude = d => d.GroupName == "v2"; });
 builder.Services.AddOpenApi(); // Default doc
 
+
+builder.Services.AddAntiforgery(options => { options.HeaderName = "X-XSRF-TOKEN"; });
+
+
+
+
 // ── Error Handling & Controllers ──────────────────────────────────
 builder.Services.AddScoped<IStudentService, StudentService>();
 builder.Services.AddProblemDetails();
@@ -197,6 +203,7 @@ builder.Services.AddCors(options =>
     {
         policy.WithOrigins(allowedOrigins)
               .AllowAnyHeader()
+
               .AllowAnyMethod()
               .AllowCredentials() // Vital for HttpOnly auth cookies in Session 2
               .SetPreflightMaxAge(TimeSpan.FromMinutes(10));
@@ -231,19 +238,36 @@ app.UseExceptionHandler();
 app.UseMiddleware<RequestLoggingMiddleware>();
 app.UseStatusCodePages();
 app.UseHttpsRedirection();
-app.UseCors("TmsClient");
+
 app.UseRouting();
 
 
-
+app.UseCors("TmsClient");
 app.UseRateLimiter();
 app.UseAuthentication();
 app.UseAuthorization();
-app.MapHub<TmsHub>("/hubs/tms");
+
+app.MapHub<TmsHub>("/hubs/tms").RequireCors("TmsClient");
 app.MapHealthChecks("/health/live").DisableRateLimiting();
 app.MapHealthChecks("/health/ready").DisableRateLimiting();
 app.UseMiddleware<V1DeprecationMiddleware>();
+app.Use(async (context, next) =>
+{
+    if (context.User.Identity?.IsAuthenticated == true || context.Request.Cookies.ContainsKey("tms_auth"))
+    {
+        var antiforgery = context.RequestServices.GetRequiredService<IAntiforgery>();
+        var tokens = antiforgery.GetAndStoreTokens(context);
 
+        context.Response.Cookies.Append("XSRF-TOKEN", tokens.RequestToken!, new CookieOptions
+        {
+            HttpOnly = false,
+            Secure = !builder.Environment.IsDevelopment(),
+            SameSite = SameSiteMode.Strict
+        });
+    }
+
+    await next(context);
+});
 // ── Endpoints & Routing ───────────────────────────────────────────
 app.MapControllers();
 
@@ -274,6 +298,15 @@ app.MapGet("/test-hash", () =>
         match2
     });
 });
+
+
+
+
+
+
+
+
+
 
 
 

@@ -6,3 +6,4 @@ public class CreateCourseRequest
     public string Title { get; set; } = "";
     public int MaxCapacity { get; set; }
 }
+

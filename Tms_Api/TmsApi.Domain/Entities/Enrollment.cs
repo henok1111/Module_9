@@ -12,14 +12,13 @@ public class Enrollment
     public decimal? Grade { get; set; }
     public DateTime EnrolledAt { get; set; } = DateTime.UtcNow;
 
-    // Status is a standard string initialized to the constant value
     public string Status { get; set; } = EnrollmentStatus.Pending;
 
-    // --- NEW COLUMNS TO MATCH FORM ---
     public string Term { get; set; } = string.Empty;
     public string? Notes { get; set; }
     public List<string> BackupCourses { get; set; } = new();
 
+    // Navigation properties
     public Student Student { get; set; } = null!;
     public Course Course { get; set; } = null!;
 }

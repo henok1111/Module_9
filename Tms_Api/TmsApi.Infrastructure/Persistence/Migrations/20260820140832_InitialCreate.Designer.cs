@@ -10,10 +10,10 @@ using TmsApi.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace TmsApi.Infrastructure.Migrations
+namespace TmsApi.Infrastructure.Persistence.Migrations
 {
     [DbContext(typeof(TmsDbContext))]
-    [Migration("20260818152002_InitialCreate")]
+    [Migration("20260820140832_InitialCreate")]
     partial class InitialCreate
     {
         /// <inheritdoc />
@@ -67,9 +67,6 @@ namespace TmsApi.Infrastructure.Migrations
                     b.Property<int>("CourseId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("CourseId1")
-                        .HasColumnType("integer");
-
                     b.Property<DateTime>("EnrolledAt")
                         .HasColumnType("timestamp with time zone");
 
@@ -88,9 +85,6 @@ namespace TmsApi.Infrastructure.Migrations
                     b.Property<int>("StudentId")
                         .HasColumnType("integer");
 
-                    b.Property<int?>("StudentId1")
-                        .HasColumnType("integer");
-
                     b.Property<string>("Term")
                         .IsRequired()
                         .ValueGeneratedOnAdd()
@@ -102,11 +96,7 @@ namespace TmsApi.Infrastructure.Migrations
 
                     b.HasIndex("CourseId");
 
-                    b.HasIndex("CourseId1");
-
                     b.HasIndex("StudentId");
-
-                    b.HasIndex("StudentId1");
 
                     b.ToTable("Enrollments");
                 });
@@ -141,24 +131,16 @@ namespace TmsApi.Infrastructure.Migrations
             modelBuilder.Entity("TmsApi.Domain.Entities.Enrollment", b =>
                 {
                     b.HasOne("TmsApi.Domain.Entities.Course", "Course")
-                        .WithMany()
+                        .WithMany("Enrollments")
                         .HasForeignKey("CourseId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
 
-                    b.HasOne("TmsApi.Domain.Entities.Course", null)
-                        .WithMany("Enrollments")
-                        .HasForeignKey("CourseId1");
-
                     b.HasOne("TmsApi.Domain.Entities.Student", "Student")
-                        .WithMany()
+                        .WithMany("Enrollments")
                         .HasForeignKey("StudentId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-
-                    b.HasOne("TmsApi.Domain.Entities.Student", null)
-                        .WithMany("Enrollments")
-                        .HasForeignKey("StudentId1");
 
                     b.Navigation("Course");
 

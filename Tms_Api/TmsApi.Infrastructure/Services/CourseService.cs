@@ -125,7 +125,9 @@ public class CourseService : ICourseService
         {
             Code = request.Code,
             Title = request.Title,
-            MaxCapacity = request.MaxCapacity
+            MaxCapacity = request.MaxCapacity,
+            
+
         };
 
         _context.Courses.Add(course);
